@@ -1,0 +1,92 @@
+---
+title: "Stat525 IE"
+author: "Harry Lu 吕达"
+date: "2017年2月24日"
+output: html_document
+---
+#Step 1
+###Read data, convert factor to numeric
+```{r,warning=FALSE,echo=FALSE}
+bird=read.table("http://www.stat.ucla.edu/projects/datasets/birds.dat",header=TRUE,sep=",",fill=TRUE)
+bird$Elevation=as.numeric(as.character(bird$Elevation))
+bird$Profile.Area=as.numeric(as.character(bird$Profile.Area))
+bird$Height=as.numeric(as.character(bird$Height))
+bird$Half.height=as.numeric(as.character(bird$Half.height))
+bird$Latitude=as.numeric(as.character(bird$Latitude))
+bird$Longitude=as.numeric(as.character(bird$Longitude))
+bird$No..Species=as.numeric(as.character(bird$No..Species))
+bird$Total.density=as.numeric(as.character(bird$Total.density))
+bird
+
+library(car)
+```
+
+#Questions
+###(a) Are there more species of birds in denser forests? `No..Species` and `Profile.Area`
+```{r,echo=FALSE}
+scatterplot(No..Species~Profile.Area,data=bird)
+```
+
+###(b) Are birds concentrated more densely in areas where vegetation is more dense? `Total.density` and `Profile.Area`
+```{r,echo=FALSE}
+scatterplot(Total.density~Profile.Area,data=bird)
+```
+
+###(c) Is there more diversity in locations at higher latitudes, or lower latitudes? `No..Species` and `Latitude`
+```{r,echo=FALSE}
+scatterplot(No..Species~Latitude,data=bird)
+```
+
+###(d) Which technical measure of vegetation structure is the best predictor of the number of bird species in a forest. `???` and `No..Species`
+```{r,echo=FALSE}
+scatterplotMatrix(~SITE+Elevation+Profile.Area+Height+Half.height+Latitude+Longitude+No..Species+Total.density,data=bird)
+```
+
+
+
+#Modeling
+
+#Plot scatterplot matrix
+```{r,echo=FALSE}
+scatterplotMatrix(~SITE+Elevation+Profile.Area+Height+Half.height+Latitude+Longitude+No..Species+Total.density,data=bird)
+```
+
+#Relationship between `Number of Species` and `Total Density`
+```{r,echo=FALSE}
+scatterplotMatrix(~No..Species+Total.density,data=bird)
+```
+
+#Analyse variables
+###1. Remove `Latitude` and `Longitube`
+```{r,echo=FALSE}
+scatterplotMatrix(~Latitude+Longitude+No..Species+Total.density,data=bird)
+```
+
+###2. Relationship between `Profile Area`, `Height` and `Half.height`
+```{r,echo=FALSE}
+scatterplotMatrix(~Profile.Area+Height+Half.height,data=bird)
+```
+
+###3. Add a column `ln(Elevation)`
+```{r,echo=FALSE}
+bird$log_Elevation=log(bird$Elevation)
+scatterplotMatrix(~Elevation+log_Elevation+No..Species+Total.density,data=bird)
+```
+
+
+
+#none use
+```{r,echo=FALSE}
+#plot(resid~Total.density)
+#line1=lm(resid~Total.density)
+#bird$resid <- bird$No..Species - summary(line1)$coef[1,1] - summary(line1)$coef[2,1]*Total.density
+#bird$squareResid <- (bird$resid)^2
+#mean(bird$resid)
+#mean(bird$squareResid)
+
+#plot(squareResid~Total.density)
+#line2=lm(squareResid~Total.density)
+#abline(line2)
+#summary(line2)$coef
+```
+
