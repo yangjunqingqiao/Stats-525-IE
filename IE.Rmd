@@ -1,27 +1,66 @@
 ---
-title: "Stat525 IE"
-author: "Harry Lu 吕达"
-date: "2017年2月24日"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
-#Step 1
-###Read data, convert factor to numeric
+#Read in Data
 ```{r,warning=FALSE,echo=FALSE}
 bird=read.table("http://www.stat.ucla.edu/projects/datasets/birds.dat",header=TRUE,sep=",",fill=TRUE)
-bird$Elevation=as.numeric(as.character(bird$Elevation))
-bird$Profile.Area=as.numeric(as.character(bird$Profile.Area))
-bird$Height=as.numeric(as.character(bird$Height))
-bird$Half.height=as.numeric(as.character(bird$Half.height))
-bird$Latitude=as.numeric(as.character(bird$Latitude))
-bird$Longitude=as.numeric(as.character(bird$Longitude))
-bird$No..Species=as.numeric(as.character(bird$No..Species))
-bird$Total.density=as.numeric(as.character(bird$Total.density))
-bird
 
+# convert list rows into easier to parse format.
+for(x in 2:9){
+  bird[,x] = as.numeric(as.character(bird[,x]))
+}
+
+head(bird)
 library(car)
 ```
+###This data is from a study done on the number of breeding pairs of birds in 40 locations around the American Pacific coastline as well as closer inland. Taken during the spring of 1994, the sites were all around 5 hetacres in size and situated in relativly homogenous habitats. The number breeding pairs of bird species was counted by sight and by analyzing sound recordings. The variables are defined by the researchers as follows:
+
+###SITE...................The site in which the data was taken
+
+###Elevation...................Meters above sea level
+
+###PROFILE AREA...................Roughly, a measure of the total amount of foliage at a site. Technically, this number is obtained by plotting vegetation density versus height above ground and taking the total area under the graph. The units, however, are not typical area units, as vegetation density is the reciprocal of a distance; the units are specially designed to measure profile area, and are called f.p. units (foliage profile units).
+
+###HEIGHT...................Roughly, the height of the top of the forest canopy. Technically, the height above which horizontal distance to semi-obscurity exceeds 30 meters (a height from which line of sight is over 30 meters). Given in meters.  
+
+###HALF-HEIGHT...................Roughly, the height that divides total foliage in two: half the forest is above it, and half below. Technically, the median of the graph of vegetation density versus height. Given in meters. 
+
+###LATITUDE...................The latitude of the site. Given in degrees.
+
+###LONGITUDE..................The longitude of the site. Given in degrees.
+
+###NO. SPECIES................The number of different species of breeding bird pairs. 
+
+###TOTAL DENSITY..............A measure of the bird population density. It is simply the number of pairs of birds per hectare.   
+			   
+###There is data missing from the Elevation, Profile.Area, Height, and Half.height variables. The missing points of elevation seem to be random however, the missing data points for Profile.Area, Height, and Half.height follow the following conditions: 
+###A site missing its Half.height will also not have its Profile area and vice versa. 
+###If a site is missing its Height variable, it will also be missing its Profile.Area and Half.height variables. 
+
+###A likely explanation for this is that Profile.Area is related in some way to Half.height, according to the description of the variables, Half.height and Profile.Area are both calculated from vegetation density with respect to height. So it would also make sense that in the cases where Height was not calculatable that the data points for Profile.Area and Half.height are missing as well. We check our theory by plotting Heights vs Profile.Area, Height vs Half.height, and Half.height vs Profile.Area.
+
+```{r}
+ols_height_vs_profile <- lm(Height ~ Profile.Area, data=bird)
+ols_height_vs_half <- lm(Height ~ Half.height, data=bird)
+ols_half_vs_profile <- lm(Half.height ~ Profile.Area, data=bird)
+
+height_vs_profile <- ggplot(bird, aes(x = Profile.Area, y = Height))
+height_vs_profile + geom_point() + geom_abline(slope = 0.547, intercept = -3.77)
+
+height_vs_half <- ggplot(bird, aes(x = Half.height, y = Height))
+height_vs_half + geom_point() + geom_abline(slope = 1.60, intercept = 6.93)
+
+
+half_vs_profile <- ggplot(bird, aes(x = Profile.Area, y = Half.height))
+half_vs_profile + geom_point() + geom_abline(slope = 0.268, intercept = -4.10)
+```
+
+
 
 #Questions
+###These are the questions posed by the site in which we found the data. 
 ###(a) Are there more species of birds in denser forests? `No..Species` and `Profile.Area`
 ```{r,echo=FALSE}
 scatterplot(No..Species~Profile.Area,data=bird)
@@ -30,7 +69,11 @@ scatterplot(No..Species~Profile.Area,data=bird)
 ###(b) Are birds concentrated more densely in areas where vegetation is more dense? `Total.density` and `Profile.Area`
 ```{r,echo=FALSE}
 scatterplot(Total.density~Profile.Area,data=bird)
+ols1 <- lm(Total.density ~ Profile.Area + Half.height)
+summary(ols1)
 ```
+###We can see that along with Half.height, Profile.Area may be a good estimator of Total.density
+
 
 ###(c) Is there more diversity in locations at higher latitudes, or lower latitudes? `No..Species` and `Latitude`
 ```{r,echo=FALSE}
@@ -42,6 +85,8 @@ scatterplot(No..Species~Latitude,data=bird)
 scatterplotMatrix(~SITE+Elevation+Profile.Area+Height+Half.height+Latitude+Longitude+No..Species+Total.density,data=bird)
 ```
 
+###(e) Other questions to consider:
+###Is number of species correlated with the total density of birds?
 
 
 #Modeling
@@ -61,11 +106,15 @@ scatterplotMatrix(~No..Species+Total.density,data=bird)
 ```{r,echo=FALSE}
 scatterplotMatrix(~Latitude+Longitude+No..Species+Total.density,data=bird)
 ```
+###It seems that latitude and longitute are not well correlated with No..Species or Total.density as their plots look like null plots. This may be because the area that the samples were taken were geographically close to eachother. 
+
 
 ###2. Relationship between `Profile Area`, `Height` and `Half.height`
 ```{r,echo=FALSE}
 scatterplotMatrix(~Profile.Area+Height+Half.height,data=bird)
 ```
+###It seems Profile.Area, Height, and Half.height are all heavily correlated with eachother and so prehaps it is enough to include just one of the three as a parameter in a model that we choose.
+
 
 ###3. Add a column `ln(Elevation)`
 ```{r,echo=FALSE}
