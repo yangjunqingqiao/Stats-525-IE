@@ -39,15 +39,19 @@ library(car)
 ###A site missing its Half.height will also not have its Profile area and vice versa. 
 ###If a site is missing its Height variable, it will also be missing its Profile.Area and Half.height variables. 
 
-###A likely explanation for this is that Profile.Area is related in some way to Half.height, according to the description of the variables, Half.height and Profile.Area are both calculated from vegetation density with respect to height. So it would also make sense that in the cases where Height was not calculatable that the data points for Profile.Area and Half.height are missing as well. We check our theory by plotting Heights vs Profile.Area, Height vs Half.height, and Half.height vs Profile.Area.
+###A likely explanation for this is that Profile.Area is related in some way to Half.height, according to the description of the variables, Half.height and Profile.Area are both calculated from vegetation density with respect to height. So it would also make sense that in the cases where Height was not calculatable that the data points for Profile.Area and Half.height are missing as well. We check our theory by plotting Height vs Profile.Area, Height vs Half.height, and Half.height vs Profile.Area.
 
 ```{r}
+
 ols_height_vs_profile <- lm(Height ~ Profile.Area, data=bird)
+
 ols_height_vs_half <- lm(Height ~ Half.height, data=bird)
+
 ols_half_vs_profile <- lm(Half.height ~ Profile.Area, data=bird)
 
 height_vs_profile <- ggplot(bird, aes(x = Profile.Area, y = Height))
 height_vs_profile + geom_point() + geom_abline(slope = 0.547, intercept = -3.77)
+
 
 height_vs_half <- ggplot(bird, aes(x = Half.height, y = Height))
 height_vs_half + geom_point() + geom_abline(slope = 1.60, intercept = 6.93)
@@ -57,10 +61,10 @@ half_vs_profile <- ggplot(bird, aes(x = Profile.Area, y = Half.height))
 half_vs_profile + geom_point() + geom_abline(slope = 0.268, intercept = -4.10)
 ```
 
-
+# TODO: Add residual plots, add analysis for both kinds of plots
 
 #Questions
-###These are the questions posed by the site in which we found the data. 
+###These are the questions posed by researchers 
 ###(a) Are there more species of birds in denser forests? `No..Species` and `Profile.Area`
 ```{r,echo=FALSE}
 scatterplot(No..Species~Profile.Area,data=bird)
@@ -68,8 +72,8 @@ scatterplot(No..Species~Profile.Area,data=bird)
 
 ###(b) Are birds concentrated more densely in areas where vegetation is more dense? `Total.density` and `Profile.Area`
 ```{r,echo=FALSE}
-scatterplot(Total.density~Profile.Area,data=bird)
-ols1 <- lm(Total.density ~ Profile.Area + Half.height)
+scatterplot(Total.density ~ Profile.Area, data=bird)
+ols1 <- lm(Total.density ~ Profile.Area + Half.height, data = bird)
 summary(ols1)
 ```
 ###We can see that along with Half.height, Profile.Area may be a good estimator of Total.density
