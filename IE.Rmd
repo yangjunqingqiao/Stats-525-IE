@@ -39,29 +39,56 @@ library(car)
 ###A site missing its Half.height will also not have its Profile area and vice versa. 
 ###If a site is missing its Height variable, it will also be missing its Profile.Area and Half.height variables. 
 
-###A likely explanation for this is that Profile.Area is related in some way to Half.height, according to the description of the variables, Half.height and Profile.Area are both calculated from vegetation density with respect to height. So it would also make sense that in the cases where Height was not calculatable that the data points for Profile.Area and Half.height are missing as well. We check our theory by plotting Height vs Profile.Area, Height vs Half.height, and Half.height vs Profile.Area.
+###A likely explanation for this is that Profile.Area is related in some way to Half.height, according to the description of the variables, Half.height and Profile.Area are both calculated from vegetation density with respect to height. So it would also make sense that in the cases where Height was not calculatable that the data points for Profile.Area and Half.height are missing as well. We check our theory by plotting Profile.Area vs Height, Half.height vs Height, and Half.height vs Profile.Area.
 
-```{r}
+\newpage
 
-ols_height_vs_profile <- lm(Height ~ Profile.Area, data=bird)
+```{r, warning=FALSE, echo=FALSE}
 
-ols_height_vs_half <- lm(Height ~ Half.height, data=bird)
+ols_profile_vs_height <- lm(Profile.Area ~ Height, data=bird)
+profile_vs_height <- ggplot(bird, aes(x = Height, y = Profile.Area))
+profile_vs_height + geom_point() + geom_abline(slope = 1.27, intercept = 15.3)
+summary(ols_profile_vs_height)
+
+
+ols_half_vs_height <- lm(Half.height ~ Height, data=bird)
+half_vs_height <- ggplot(bird, aes(x = Height, y = Half.height))
+half_vs_height + geom_point() + geom_abline(slope = 0.411, intercept = -1.06)
+summary(ols_half_vs_height)
+
 
 ols_half_vs_profile <- lm(Half.height ~ Profile.Area, data=bird)
-
-height_vs_profile <- ggplot(bird, aes(x = Profile.Area, y = Height))
-height_vs_profile + geom_point() + geom_abline(slope = 0.547, intercept = -3.77)
-
-
-height_vs_half <- ggplot(bird, aes(x = Half.height, y = Height))
-height_vs_half + geom_point() + geom_abline(slope = 1.60, intercept = 6.93)
-
-
 half_vs_profile <- ggplot(bird, aes(x = Profile.Area, y = Half.height))
 half_vs_profile + geom_point() + geom_abline(slope = 0.268, intercept = -4.10)
+summary(ols_half_vs_profile <- lm(Half.height ~ Profile.Area, data=bird))
 ```
 
-# TODO: Add residual plots, add analysis for both kinds of plots
+###Our evidence supports our claim that these three variables are correlated with eachother. We should check the residual plots to make sure that the relationship is indeed linear now.
+
+\newpage
+# Residual Plots
+
+```{r, warning=FALSE, echo=FALSE}
+bird$resid_profile_vs_height <- 15.3 + 1.27*bird$Height - bird$Profile.Area
+ols_resid_profile_vs_height_vs_profile <- lm(resid_profile_vs_height ~ Profile.Area, data = bird)
+resid_profile_vs_height_vs_profile <- ggplot(bird, aes(x = Profile.Area, y = resid_profile_vs_height))
+resid_profile_vs_height_vs_profile + geom_point() + geom_abline(slope = -0.305, intercept = 10.5)
+summary(ols_resid_profile_vs_height_vs_profile)
+
+bird$resid_half_vs_height <- -1.06 + 0.411*bird$Height - bird$Half.height
+ols_resid_half_vs_height_vs_half <- lm(resid_half_vs_height ~ Half.height, data = bird)
+resid_half_vs_height_vs_half <- ggplot(bird, aes(x = Half.height, y = resid_half_vs_height))
+resid_half_vs_height_vs_half + geom_point() + geom_abline(slope = -0.344, intercept = 1.79)
+summary(ols_resid_half_vs_height_vs_half)
+  
+bird$resid_half_vs_profile <- -4.10 + 0.268*bird$Profile.Area - bird$Half.height
+ols_resid_half_vs_profile_vs_profile <- lm(resid_half_vs_profile ~ Profile.Area, data = bird)
+resid_half_vs_profile_vs_profile <- ggplot(bird, aes(x = Profile.Area, y = resid_half_vs_profile))
+resid_half_vs_profile_vs_profile + geom_point() + geom_abline(slope = 0.00, intercept = 0.002)
+summary(ols_resid_half_vs_profile_vs_profile)
+
+```
+#TODO: add analysis
 
 #Questions
 ###These are the questions posed by researchers 
