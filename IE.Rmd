@@ -45,50 +45,87 @@ library(car)
 
 ```{r, warning=FALSE, echo=FALSE}
 
-ols_profile_vs_height <- lm(Profile.Area ~ Height, data=bird)
+ols_profile_vs_height <- lm(Profile.Area ~ Height, data=bird, na.action = na.exclude)
+
 profile_vs_height <- ggplot(bird, aes(x = Height, y = Profile.Area))
-profile_vs_height + geom_point() + geom_abline(slope = 1.27, intercept = 15.3)
+
+profile_vs_height + geom_point() + stat_smooth(method = "lm", col = "red", fullrange=TRUE)
+
 summary(ols_profile_vs_height)
 
 
-ols_half_vs_height <- lm(Half.height ~ Height, data=bird)
+
+ols_half_vs_height <- lm(Half.height ~ Height, data=bird, na.action = na.exclude)
+
 half_vs_height <- ggplot(bird, aes(x = Height, y = Half.height))
-half_vs_height + geom_point() + geom_abline(slope = 0.411, intercept = -1.06)
+
+half_vs_height + geom_point() + stat_smooth(method = "lm", col = "red", fullrange=TRUE)
+
 summary(ols_half_vs_height)
 
 
-ols_half_vs_profile <- lm(Half.height ~ Profile.Area, data=bird)
+
+ols_half_vs_profile <- lm(Half.height ~ Profile.Area, data=bird, na.action = na.exclude)
+
 half_vs_profile <- ggplot(bird, aes(x = Profile.Area, y = Half.height))
-half_vs_profile + geom_point() + geom_abline(slope = 0.268, intercept = -4.10)
-summary(ols_half_vs_profile <- lm(Half.height ~ Profile.Area, data=bird))
+
+half_vs_profile + geom_point() + stat_smooth(method = "lm", col = "red", fullrange=TRUE)
+
+summary(ols_half_vs_profile)
 ```
 
-###Our evidence supports our claim that these three variables are correlated with eachother. We should check the residual plots to make sure that the relationship is indeed linear now.
+###Our evidence supports our claim that these three variables are correlated with eachother. In particular, we found small p values for the slopes of our estimates. This does not necessarily mean that the relationships must be linear however as just by eyeballing the first graph, we can see faintly a logarithmic spread among the points not including the leftmost one. We should next check the residual plots to make sure that the relationship is indeed linear now.
 
 \newpage
 # Residual Plots
 
 ```{r, warning=FALSE, echo=FALSE}
-bird$resid_profile_vs_height <- 15.3 + 1.27*bird$Height - bird$Profile.Area
-ols_resid_profile_vs_height_vs_profile <- lm(resid_profile_vs_height ~ Profile.Area, data = bird)
-resid_profile_vs_height_vs_profile <- ggplot(bird, aes(x = Profile.Area, y = resid_profile_vs_height))
-resid_profile_vs_height_vs_profile + geom_point() + geom_abline(slope = -0.305, intercept = 10.5)
+#Profile.Area vs Height residual graph
+bird$pred_profile.Area_from_height <- predict(ols_profile_vs_height)
+
+bird$resid_profile_vs_height <- resid(ols_profile_vs_height)
+
+ols_resid_profile_vs_height_vs_profile <- lm(resid_profile_vs_height ~ pred_profile.Area_from_height, data = bird)
+
+resid_profile_vs_height_vs_profile <- ggplot(bird, aes(x = pred_profile.Area_from_height, y = resid_profile_vs_height))
+
+resid_profile_vs_height_vs_profile + geom_point() + stat_smooth(method = "lm", col = "red", fullrange=TRUE)
+
 summary(ols_resid_profile_vs_height_vs_profile)
 
-bird$resid_half_vs_height <- -1.06 + 0.411*bird$Height - bird$Half.height
-ols_resid_half_vs_height_vs_half <- lm(resid_half_vs_height ~ Half.height, data = bird)
+
+
+#Half.height vs height residual graph
+bird$pred_half.height_from_height <- predict(ols_half_vs_height)
+
+bird$resid_half_vs_height <- resid(ols_half_vs_height)
+
+ols_resid_half_vs_height_vs_half <- lm(resid_half_vs_height ~ pred_half.height_from_height, data = bird)
+
 resid_half_vs_height_vs_half <- ggplot(bird, aes(x = Half.height, y = resid_half_vs_height))
-resid_half_vs_height_vs_half + geom_point() + geom_abline(slope = -0.344, intercept = 1.79)
+
+resid_half_vs_height_vs_half + geom_point() + stat_smooth(method = "lm", col = "red", fullrange=TRUE)
+
 summary(ols_resid_half_vs_height_vs_half)
   
-bird$resid_half_vs_profile <- -4.10 + 0.268*bird$Profile.Area - bird$Half.height
+
+
+#Half.height vs Profile.Area residual graph 
+bird$pred_half.height_from_profile.Area <- predict(ols_half_vs_profile)
+
+bird$resid_half_vs_profile <- resid(ols_half_vs_profile)
+
 ols_resid_half_vs_profile_vs_profile <- lm(resid_half_vs_profile ~ Profile.Area, data = bird)
+
 resid_half_vs_profile_vs_profile <- ggplot(bird, aes(x = Profile.Area, y = resid_half_vs_profile))
-resid_half_vs_profile_vs_profile + geom_point() + geom_abline(slope = 0.00, intercept = 0.002)
+
+resid_half_vs_profile_vs_profile + geom_point() + stat_smooth(method = "lm", col = "red", fullrange=TRUE)
+
 summary(ols_resid_half_vs_profile_vs_profile)
 
 ```
 #TODO: add analysis
+###The p values of some residual plots are small which indicates that . The residuals of our estimates of Profile.Area bsed on Height has a small negative slope. 
 
 #Questions
 ###These are the questions posed by researchers 
