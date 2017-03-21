@@ -128,7 +128,7 @@ summary(ols_resid_half_vs_profile_vs_profile)
 ###The p values of some residual plots are small which indicates that . The residuals of our estimates of Profile.Area bsed on Height has a small negative slope. 
 
 #Questions
-###These are the questions posed by researchers 
+###These are the questions posed by the researchers and are the main focus of this project.
 ###(a) Are there more species of birds in denser forests? `No..Species` and `Profile.Area`
 ```{r,echo=FALSE}
 scatterplot(No..Species~Profile.Area,data=bird)
