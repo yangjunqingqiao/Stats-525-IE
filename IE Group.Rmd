@@ -1,0 +1,211 @@
+---
+title: "Stat525 IE Project"
+author: "Da Lu, YangJunqing Qiao, Dan Wang, Kweku Fynn"
+date: "Spring 2017"
+output: html_document
+---
+#Introduction
+###Read data, convert factor to numeric
+- Here is the first few lines of the birds data
+```{r,warning=FALSE,echo=FALSE}
+library(ggplot2)
+library(car)
+
+bird=read.table("http://www.stat.ucla.edu/projects/datasets/birds.dat",header=TRUE,sep=",",fill=TRUE)
+bird$Elevation=as.numeric(as.character(bird$Elevation))
+bird$Profile.Area=as.numeric(as.character(bird$Profile.Area))
+bird$Height=as.numeric(as.character(bird$Height))
+bird$Half.height=as.numeric(as.character(bird$Half.height))
+bird$Latitude=as.numeric(as.character(bird$Latitude))
+bird$Longitude=as.numeric(as.character(bird$Longitude))
+bird$No..Species=as.numeric(as.character(bird$No..Species))
+bird$Total.density=as.numeric(as.character(bird$Total.density))
+head(bird)
+```
+
+- There are total 40 rows of data.
+- This data is from a study done on the number of breeding pairs of birds in 40 locations around the American Pacific coastline as well as closer inland. Taken during the spring of 1994, the sites were all around 5 hetacres in size and situated in relativly homogenous habitats. The number breeding pairs of bird species was counted by sight and by analyzing sound recordings. The variables are defined by the researchers as follows:
+- Each row has 9 parameters: `SITE`, `Elevation`, `Profile.Area`, `Height`, `Half.height`, `Latitude`, `Longitude`, `No..Species` and `Total.density`
+    - `SITE`: The place where the data were collected.
+    - `Elevation`: The height of the site above sea level. Given in meters.
+    - `Profile.Area`: Roughly, a measure of the total amount of foliage at a site. We consider it as the density of forest at certain height.
+    - `Height`: Roughly, the height of the top of the forest canopy. Technically, the height above which horizontal distance to semi-obscurity exceeds 30 meters(a height from which line of sight is over 30 meters). Given in meters.
+    - `Half.height`: Roughly, the height that divides total foliage in two: half the forest is above it, and half below. Technically, the median of the graph of vegetation density versus height. Given in meters.
+    - `Latitude`: The latitude of the site. Given in degrees.
+    - `Longitude`: The longitude of the site. Given in degrees.
+    - `No..Species`: The number of different species of breeding bird pairs.
+    - `Total.density`: A measure of the bird population density. It is simply the number of pairs of birds per hectare.
+- There is data missing from the `Elevation`, `Profile.Area`, `Heigh`t, and `Half.height` variables. The missing points of elevation seem to be random. However, the missing data points for `Profile.Area`, `Height`, and `Half.height` follow the following conditions:
+    - A site missing its `Half.height` will also not have its `Profile area` and vice versa. 
+    - If a site is missing its `Height` variable, it will also be missing its `Profile.Area` and `Half.height` variables. 
+    - A likely explanation for this is that `Profile.Area` is related in some way to `Half.height`, according to the description of the variables, `Half.height` and `Profile.Area` are both calculated from vegetation density with respect to height. So it would also make sense that in the cases where `Height` was not calculatable that the data points for `Profile.Area` and `Half.height` are missing as well. We check our theory by plotting `Profile.Area` vs `Height`, `Half.height` vs `Height`, and `Half.height` vs `Profile.Area`.
+
+#Questions
+- Those questions are from the *data description*
+
+###(a) Are there more species of birds in denser forests?
+- This question is asking the relationship between `No..Species` and `Profile.Area`
+- The following is the scatterplot of `No..Species` and `Profile.Area`
+```{r,echo=FALSE}
+scatterplot(No..Species~Profile.Area,data=bird,smoother=FALSE)
+```
+
+- In the figure above, the scatter points form a very wide oval shape. It's not difficult to see that the oval is going upward. There might be more species of birds in denser forests, although the range is quite large.
+- The following is the added variable plot
+```{r,echo=FALSE}
+residualPlot(lm(No..Species~Profile.Area,data=bird),ylab="Residual of No...Species",xlab="Profile.Area")
+```
+
+- **ANSWER FOR PART (a)**
+
+###(b) Are birds concentrated more densely in areas where vegetation is more dense?
+- This question is asking the relationship between `Total.density` and `Profile.Area`
+- The following is the scatterplot of `Total.density` and `Profile.Area`
+```{r,echo=FALSE}
+scatterplot(Total.density~Profile.Area,data=bird,smoother=FALSE)
+```
+
+- From the increasing trend, birds may be concentrated more densely in areas where vegetation is more dense.
+- The following is the added variable plot
+```{r,echo=FALSE}
+residualPlot(lm(Total.density~Profile.Area,data=bird),ylab="Residual of Total.density",xlab="Profile.Area")
+```
+
+- **ANSWER FOR PART (b)**
+
+###(c) Is there more diversity in locations at higher latitudes, or lower latitudes?
+- This question is asking the relationship between `No..Species` and `Latitude`
+- The following is the scatterplot of `No..Species` and `Latitude`
+```{r,echo=FALSE}
+scatterplot(No..Species~Latitude,data=bird,smoother=FALSE)
+```
+
+- There is one extreme point on the very left, so we first ignore the point and redraw the scatterplot.
+```{r,echo=FALSE}
+scatterplot(No..Species[1:39]~Latitude[1:39],xlab="Latitude (40th point removed)",ylab="No..Species (40th point removed)",data=bird,smoother=FALSE)
+```
+
+- The following is the added variable plot
+```{r,echo=FALSE}
+residualPlot(lm(No..Species[1:39]~Latitude[1:39],data=bird),ylab="Residual of No..Species (40th point removed)",xlab="Latitude (40th point removed)")
+```
+
+- Actually, the data are only collected in California and neighbor states, but not globally. So it's hard to make the conclusion of the relationship between `No..Species` and `Latitude`.
+- **MORE ANSWER FOR PART (c)**
+
+###(d) Which technical measure of vegetation structure is the best predictor of the number of bird species in a forest.
+- This question is asking that which parameter from `Profile.Area`, `Height` and `Half.height` could best predict `No..Species`
+- The following is the scatterplot of `No..Species` and other parameters
+```{r,echo=FALSE}
+scatterplotMatrix(~Profile.Area+Height+Half.height+No..Species,data=bird,smoother=FALSE)
+```
+
+- The following is the added variable plot
+```{r,echo=FALSE}
+residualPlot(lm(No..Species~Profile.Area+Height+Half.height,data=bird),ylab="Residuals of No..Species")
+```
+
+- **ANSWER FOR PART (d)**
+
+#Determining the useful parameters
+- F-test:
+    - Large p-value $\to$ $H_0$ $\to$ new variable is non-significant
+    - Small p-value $\to$ $H_1$ $\to$ new variable is significant
+- Original model 1:
+```
+M1: No..Species~Elevation+Profile.Area+Height+Half.height+Latitude+Longitude
+```
+$$\mbox{No..Species} \sim \mbox{Elevation}+\mbox{Profile.Area}+\mbox{Height}+\mbox{Half.height}+\mbox{Latitude}+\mbox{Longitude}$$
+- Original model 2:
+```
+M2: Total.density~Elevation+Profile.Area+Height+Half.height+Latitude+Longitude
+```
+$$\mbox{Total.density} \sim \mbox{Elevation}+\mbox{Profile.Area}+\mbox{Height}+\mbox{Half.height}+\mbox{Latitude}+\mbox{Longitude}$$
+
+###1. Plot scatterplot matrix
+```{r,echo=FALSE}
+scatterplotMatrix(~Elevation+Profile.Area+Height+Half.height+Latitude+Longitude+No..Species+Total.density,data=bird,smoother=FALSE)
+```
+
+- The final goal of this study is to find the relationship between the first 6 parameters and the last 2 parameters. 
+- We'll analysis the relationship between the last 2 parameters first to see if they could convert to each other.
+- Then we'll analysis each of the first 6 parameters with either `No..Species` or `Total.density`.
+
+###2. Relationship between `Profile.Area`, `Height` and `Half.height`
+#####We analyse those three variables because they all related to vegetation.
+```{r,echo=FALSE}
+scatterplotMatrix(~Profile.Area+Height+Half.height,data=bird,smoother=FALSE)
+```
+
+- `Profile.Area` and `Height`
+```{r,echo=FALSE}
+ols_profile_vs_height=lm(Profile.Area~Height,data=bird,na.action=na.exclude)
+profile_vs_height=ggplot(bird,aes(x=Height,y=Profile.Area))
+profile_vs_height+geom_point()+stat_smooth(method="lm",col="red",fullrange=TRUE)
+summary(ols_profile_vs_height)
+```
+
+- `Half.height` and `Height`
+```{r,echo=FALSE}
+ols_half_vs_height=lm(Half.height~Height,data=bird,na.action=na.exclude)
+half_vs_height=ggplot(bird,aes(x=Height,y=Half.height))
+half_vs_height+geom_point()+stat_smooth(method="lm",col="red",fullrange=TRUE)
+summary(ols_half_vs_height)
+```
+
+- `Half.height` and `Profile.Area`
+```{r,echo=FALSE}
+ols_half_vs_profile=lm(Half.height~Profile.Area,data=bird,na.action=na.exclude)
+half_vs_profile=ggplot(bird,aes(x=Profile.Area,y=Half.height))
+half_vs_profile+geom_point()+stat_smooth(method="lm",col="red",fullrange=TRUE)
+summary(ols_half_vs_profile)
+```
+
+###3. Relationship between `No..Species` and `Total.density`
+#####Those two variables are two $y$s.
+```{r,echo=FALSE}
+scatterplotMatrix(~No..Species+Total.density,data=bird,smoother=FALSE)
+```
+
+- The following is added variable plot
+```{r,echo=FALSE}
+residualPlot(lm(No..Species~Total.density,data=bird),ylab="Residual of No..Species",xlab="Total.density")
+```
+
+- **CONCLUSIONS OF PART 3**
+
+###4. Remove `Latitude` and `Longitude`
+```{r,echo=FALSE}
+scatterplotMatrix(~Latitude+Longitude+No..Species+Total.density,data=bird,smoother=FALSE)
+```
+
+- Obviously, `Latitude` and `Longitude` are linear correlated. And the relationship **between** `Latitude` or `Longitude` **and** `No..Species` or `Total.density` are very random. So we decided to remove.
+- Also, as we mentioned before, the data are collected only in certain areas but not globally. So the `Latitude` and `Longitude` are very non-significant to `No..Species` and `Total.density`
+
+###5. Remove `Elevation`
+```{r,echo=FALSE}
+scatterplotMatrix(~Elevation+No..Species+Total.density,data=bird,smoother=FALSE)
+```
+
+- **F-test**
+###6. Models
+$$y_1=\mbox{No..Species}$$
+$$y_2=\mbox{Total.density}$$
+$$x_1=\mbox{Profile.Area}$$
+$$x_2=\mbox{Height}$$
+$$x_3=\mbox{Half.height}$$
+```
+M1: No..Species~Profile.Area+Height+Half.height
+```
+$$y_1=\beta_{10}+\beta_{11}x_1+\beta_{12}x_2+\beta_{13}x_3$$
+```
+M2: Total.density~Profile.Area+Height+Half.height
+```
+$$y_2=\beta_{20}+\beta_{21}x_1+\beta_{22}x_2+\beta_{23}x_3$$
+#Conclusion
+```{r}
+#what we need to include:
+#1. seasons and number of birds
+#2. geographical position
+#3. conclusions from previous parts
+```
